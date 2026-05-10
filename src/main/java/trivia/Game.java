@@ -5,6 +5,10 @@ import java.util.LinkedList;
 
 // REFACTOR ME
 public class Game implements IGame {
+    """ SMELL 1: ARRAYS PARALELOS
+    Los datos del jugador (nombre, posición, monedas, penalización) 
+    están dispersos en 4 estructuras distintas que dependen de un 
+    índice compartido. Debería existir una clase 'Player'. """
    ArrayList players = new ArrayList();
    int[] places = new int[6];
    int[] purses = new int[6];
@@ -19,6 +23,9 @@ public class Game implements IGame {
    boolean isGettingOutOfPenaltyBox;
 
    public Game() {
+      """ SMELL 2: NÚMERO MÁGICO (50)
+      El número 50 está "hardcodeado"
+      Debería ser una constante configurativa"""
       for (int i = 0; i < 50; i++) {
          popQuestions.addLast("Pop Question " + i);
          scienceQuestions.addLast(("Science Question " + i));
@@ -31,6 +38,10 @@ public class Game implements IGame {
       return "Rock Question " + index;
    }
 
+   """SMELL 3: NOMBRE ENGAÑOSO / LÓGICA INVERSA
+   isPlayable() sugiere una comprobación de estado, pero según las 
+   reglas de este juego suele usarse para ver si hay jugadores 
+   suficientes (mínimo 2)"""
    public boolean isPlayable() {
       return (howManyPlayers() >= 2);
    }
@@ -50,6 +61,10 @@ public class Game implements IGame {
       return players.size();
    }
 
+   """ SMELL 4: MÉTODO LARGO Y RESPONSABILIDAD MÚLTIPLE
+   roll() hace de todo: mueve al jugador, calcula si sale de la cárcel, 
+   imprime en consola, decide la categoría y lanza la pregunta
+   Viola el Principio de Responsabilidad Única"""
    public void roll(int roll) {
       System.out.println(players.get(currentPlayer) + " is the current player");
       System.out.println("They have rolled a " + roll);
@@ -60,6 +75,9 @@ public class Game implements IGame {
 
             System.out.println(players.get(currentPlayer) + " is getting out of the penalty box");
             places[currentPlayer] = places[currentPlayer] + roll;
+            
+            // SMELL 2b: NÚMERO MÁGICO (12)
+            // El tamaño del tablero (12) aparece aquí y en otras partes sin explicación.
             if (places[currentPlayer] > 12) places[currentPlayer] = places[currentPlayer] - 12;
 
             System.out.println(players.get(currentPlayer)
@@ -160,7 +178,9 @@ public class Game implements IGame {
       return true;
    }
 
-
+   """ SMELL 5: NOMBRE CONFUSO Y LÓGICA BOLEANA EXTRAÑA
+   didPlayerWin() devuelve 'false' si el jugador realmente gana  
+   (llega a 6 monedas)"""
    private boolean didPlayerWin() {
       return !(purses[currentPlayer] == 6);
    }
