@@ -100,54 +100,42 @@ public class GameOld implements IGame {
 
 
    private String currentCategory() {
-      if (places[currentPlayer] - 1 == 0) return "Pop";
-      if (places[currentPlayer] - 1 == 4) return "Pop";
-      if (places[currentPlayer] - 1 == 8) return "Pop";
-      if (places[currentPlayer] - 1 == 1) return "Science";
-      if (places[currentPlayer] - 1 == 5) return "Science";
-      if (places[currentPlayer] - 1 == 9) return "Science";
-      if (places[currentPlayer] - 1 == 2) return "Sports";
-      if (places[currentPlayer] - 1 == 6) return "Sports";
-      if (places[currentPlayer] - 1 == 10) return "Sports";
-      return "Rock";
-   }
+    // Usamos módulo 4 porque hay 4 categorías que se repiten cada 4 casillas
+    // El -1 es porque el código original inicializa la posición en 1 en lugar de 0
+    int categoryIndex = (places[currentPlayer] - 1) % 4;
+    
+    if (categoryIndex == 0) return "Pop";
+    if (categoryIndex == 1) return "Science";
+    if (categoryIndex == 2) return "Sports";
+    return "Rock";
+}
 
    public boolean handleCorrectAnswer() {
-      if (inPenaltyBox[currentPlayer]) {
-         if (isGettingOutOfPenaltyBox) {
-            System.out.println("Answer was correct!!!!");
-            purses[currentPlayer]++;
-            System.out.println(players.get(currentPlayer)
-                               + " now has "
-                               + purses[currentPlayer]
-                               + " Gold Coins.");
-
-            boolean winner = didPlayerWin();
-            currentPlayer++;
-            if (currentPlayer == players.size()) currentPlayer = 0;
-
-            return winner;
-         } else {
-            currentPlayer++;
-            if (currentPlayer == players.size()) currentPlayer = 0;
-            return true;
-         }
-
-      } else {
-
-         System.out.println("Answer was corrent!!!!");
-         purses[currentPlayer]++;
-         System.out.println(players.get(currentPlayer)
-                            + " now has "
-                            + purses[currentPlayer]
-                            + " Gold Coins.");
-
-         boolean winner = didPlayerWin();
-         currentPlayer++;
-         if (currentPlayer == players.size()) currentPlayer = 0;
-
-         return winner;
+      // Caso 1: El jugador está en la cárcel y NO sacó un número para salir
+      if (inPenaltyBox[currentPlayer] && !isGettingOutOfPenaltyBox) {
+         return nextTurn(); // Solo pasamos al siguiente turno
       }
+
+      // Caso 2: El jugador no estaba en la cárcel O estaba pero SÍ logró salir
+      System.out.println("Answer was correct!!!!");
+      purses[currentPlayer]++;
+      System.out.println(players.get(currentPlayer) 
+        + " now has " 
+        + purses[currentPlayer] 
+        + " Gold Coins.");
+
+      // Verificamos si ganó (didPlayerWin devuelve false si llega a 6 monedas)
+      boolean status = didPlayerWin(); 
+      nextTurn();
+      return status;
+   }
+
+/** * Método auxiliar extraído para evitar repetir la lógica de cambio de jugador 
+ */
+   private boolean nextTurn() {
+      currentPlayer++;
+      if (currentPlayer == players.size()) currentPlayer = 0;
+      return true;
    }
 
    public boolean wrongAnswer() {
